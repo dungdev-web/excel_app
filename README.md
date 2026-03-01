@@ -1,4 +1,4 @@
-# 💼 Company Comparison System
+# Company Comparison System
 
 **Một nền tảng toàn diện để so sánh công ty, phân tích lương và hợp tác theo thời gian thực**
 
@@ -7,21 +7,22 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
+<img width="225" height="225" alt="image" src="https://github.com/user-attachments/assets/2d49c0e8-ddae-4f96-9df2-6a3a6a91fc60" />
 
 ## 📋 Mục Lục
 
-- [🎯 Tổng Quan](#-tổng-quan)
-- [✨ Tính Năng](#-tính-năng)
-- [🏗️ Kiến Trúc](#-kiến-trúc)
-- [🚀 Cài Đặt](#-cài-đặt)
-- [💻 Sử Dụng](#-sử-dụng)
-- [🔌 API Endpoints](#-api-endpoints)
-- [🎣 Custom Hooks](#-custom-hooks)
-- [📊 Tech Stack](#-tech-stack)
-- [📁 Cấu Trúc Thư Mục](#-cấu-trúc-thư-mục)
-- [🔧 Cấu Hình](#-cấu-hình)
-- [🐛 Troubleshooting](#-troubleshooting)
-- [📚 Tài Liệu Thêm](#-tài-liệu-thêm)
+- [ Tổng Quan](#-tổng-quan)
+- [ Tính Năng](#-tính-năng)
+- [ Kiến Trúc](#-kiến-trúc)
+- [ Cài Đặt](#-cài-đặt)
+- [ Sử Dụng](#-sử-dụng)
+- [ API Endpoints](#-api-endpoints)
+- [ Custom Hooks](#-custom-hooks)
+- [ Tech Stack](#-tech-stack)
+- [ Cấu Trúc Thư Mục](#-cấu-trúc-thư-mục)
+- [ Cấu Hình](#-cấu-hình)
+- [ Troubleshooting](#-troubleshooting)
+- [ Tài Liệu Thêm](#-tài-liệu-thêm)
 
 ---
 
