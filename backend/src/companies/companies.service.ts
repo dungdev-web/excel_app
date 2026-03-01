@@ -53,7 +53,7 @@ export class CompaniesService {
         const company: Company = {
           id:             row.getCell(1).value,
           name:           row.getCell(2).value,
-          industry:       row.getCell(3).value,
+          industry:       row.getCell(3).value.toLocaleUpperCase(),
           salary:         row.getCell(4).value,
           benefits:       row.getCell(5).value,
           growth:         row.getCell(6).value,

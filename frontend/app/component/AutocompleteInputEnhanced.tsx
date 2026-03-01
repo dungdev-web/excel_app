@@ -27,6 +27,7 @@ export default function AutocompleteInputEnhanced({
   icon = '🏢'
 }: AutocompleteInputEnhancedProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const {
     suggestions,
     isOpen,
@@ -44,12 +45,40 @@ export default function AutocompleteInputEnhanced({
   const handleSuggestionClick = (suggestion: string) => {
     handleSelectSuggestion(suggestion);
     onChange(suggestion);
+    // Reset input sau khi chọn
+    handleInputChange('');
   };
 
   const handleAddCustom = () => {
     if (value.trim() && allowCustom && onCustomAdd) {
       onCustomAdd(value);
       handleSelectSuggestion(value);
+      onChange(value);
+      handleInputChange(''); // Reset sau khi thêm
+    }
+  };
+
+  // Xử lý click ngoài dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        handleBlur();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [handleBlur]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        handleSuggestionClick(suggestions[0]);
+      } else if (allowCustom && value.trim()) {
+        handleAddCustom();
+      }
     }
   };
 
@@ -69,6 +98,7 @@ export default function AutocompleteInputEnhanced({
             onChange={(e) => handleChange(e.target.value)}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="flex-1 p-3 outline-none"
           />
@@ -84,7 +114,10 @@ export default function AutocompleteInputEnhanced({
 
         {/* Suggestions Dropdown */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+          <div 
+            ref={dropdownRef}
+            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+          >
             {/* Suggestions */}
             {suggestions.length > 0 && (
               <>
@@ -94,7 +127,10 @@ export default function AutocompleteInputEnhanced({
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={`suggestion-${index}`}
-                    onClick={() => handleSuggestionClick(suggestion)}
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // Ngăn blur event
+                      handleSuggestionClick(suggestion);
+                    }}
                     className="w-full text-left px-4 py-2 hover:bg-blue-50 focus:bg-blue-100 flex items-center gap-2"
                   >
                     <span>✓</span>
@@ -109,7 +145,10 @@ export default function AutocompleteInputEnhanced({
               <>
                 <div className="border-t border-gray-200"></div>
                 <button
-                  onClick={handleAddCustom}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleAddCustom();
+                  }}
                   className="w-full text-left px-4 py-2 hover:bg-green-50 text-green-700 font-medium flex items-center gap-2"
                 >
                   <span>➕</span>

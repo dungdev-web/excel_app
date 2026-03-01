@@ -130,10 +130,10 @@ export class ComparisonsService {
       throw new Error('Company not found or access denied');
 
     const benchmark1 =
-      INDUSTRY_BENCHMARK[company1.industry] || INDUSTRY_BENCHMARK.IT;
+      INDUSTRY_BENCHMARK[company1.industry.toLocaleUpperCase()] || INDUSTRY_BENCHMARK.IT;
     const benchmark2 =
-      INDUSTRY_BENCHMARK[company2.industry] || INDUSTRY_BENCHMARK.IT;
-    if (company1.industry !== company2.industry) {
+      INDUSTRY_BENCHMARK[company2.industry.toLocaleUpperCase()] || INDUSTRY_BENCHMARK.IT;
+    if (benchmark1 !== benchmark2) {
       throw new Error(
         `Không thể so sánh 2 công ty khác ngành (${company1.industry} vs ${company2.industry}). Vui lòng chọn 2 công ty cùng ngành.`,
       );
@@ -184,7 +184,7 @@ export class ComparisonsService {
       winner,
       recommendation,
       industryBenchmark: {
-        industry: company1.industry,
+        industry: company1.industry.toLocaleUpperCase(),
         avgSalary: benchmark1.avgSalary,
         avgBenefits: benchmark1.avgBenefits,
         avgGrowth: benchmark1.avgGrowth,

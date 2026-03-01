@@ -62,7 +62,7 @@ export default function Home() {
       alert("Vui lòng chọn 2 công ty khác nhau");
       return;
     }
-    if (selectedCompany1.industry !== selectedCompany2.industry) {
+    if (selectedCompany1.industry.toLocaleUpperCase() !== selectedCompany2.industry.toLocaleUpperCase()) {
       alert(`Vui lòng chọn 2 công ty cùng ngành để so sánh (${selectedCompany1.industry} vs ${selectedCompany2.industry})`);
       return;
     }
