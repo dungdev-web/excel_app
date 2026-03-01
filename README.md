@@ -7,10 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
-<div style="border-radius:50%;" >
-<img width="225" height="225" alt="image" src="https://github.com/user-attachments/assets/2d49c0e8-ddae-4f96-9df2-6a3a6a91fc60" />
-</div>
-## 📋 Mục Lục
+## Mục Lục
 
 - [ Tổng Quan](#-tổng-quan)
 - [ Tính Năng](#-tính-năng)
@@ -27,50 +24,50 @@
 
 ---
 
-## 🎯 Tổng Quan
+## Tổng Quan
 
 **Company Comparison System** là một ứng dụng web full-stack giúp người dùng:
 
-✅ **So sánh công ty** - Hiển thị dữ liệu song song với bảng & biểu đồ  
-✅ **Nhận gợi ý từ AI** - Thuật toán weighted scoring tìm công ty phù hợp  
-✅ **Phân tích lương** - So sánh mức lương với tiêu chuẩn thị trường (Adecco Vietnam)  
-✅ **Xem analytics** - Dashboard thời gian thực về công ty & so sánh  
-✅ **Hợp tác real-time** - WebSocket để cùng so sánh với đồng nghiệp  
+**So sánh công ty** - Hiển thị dữ liệu song song với bảng & biểu đồ  
+**Nhận gợi ý từ AI** - Thuật toán weighted scoring tìm công ty phù hợp  
+**Phân tích lương** - So sánh mức lương với tiêu chuẩn thị trường (Adecco Vietnam)  
+**Xem analytics** - Dashboard thời gian thực về công ty & so sánh  
+**Hợp tác real-time** - WebSocket để cùng so sánh với đồng nghiệp  
 
 ---
 
-## ✨ Tính Năng
+## Tính Năng
 
-### 1. 📋 So Sánh Công Ty
+### 1. So Sánh Công Ty
 - Bảng so sánh chi tiết (lương, phúc lợi, phát triển, cân bằng)
 - Xem kết quả thắng/thua
 - Lưu lịch sử so sánh
 
-### 2. 📊 Visualizations
+### 2. Visualizations
 - **Bar Chart** - So sánh điểm số
 - **Radar Chart** - Phân tích đa chiều
 - Responsive design trên mọi màn hình
 
-### 3. 🤖 AI Recommendations
+### 3. AI Recommendations
 - Weighted scoring algorithm (không cần API)
 - Gợi ý top 3 công ty phù hợp
 - Xếp hạng dựa trên ưu tiên người dùng
 - Lưu lịch sử gợi ý
 
-### 4. 📊 Analytics Dashboard
+### 4. Analytics Dashboard
 - Tổng số công ty & so sánh
 - Top 5 công ty được xem nhiều nhất
 - Thống kê lương (avg, median, min, max)
 - Phân bố theo ngành
 - Điểm số sức khỏe công ty
 
-### 5. 💰 Salary Benchmarking
+### 5. Salary Benchmarking
 - So sánh lương với chuẩn thị trường
 - Dữ liệu từ Adecco Vietnam
 - Breakdown theo cấp độ (Junior, Mid, Senior)
 - Recommendation (Accept/Negotiate/Reject)
 
-### 6. 🔄 Real-time Collaboration
+### 6. Real-time Collaboration
 - WebSocket-based communication
 - Join sessions bằng ID
 - Chia sẻ comparisons live
@@ -78,7 +75,7 @@
 
 ---
 
-## 🏗️ Kiến Trúc
+## Kiến Trúc
 
 ### Stack
 
@@ -114,10 +111,10 @@ Page (6 Tabs)
 ├── Tab 1: So Sánh
 │   ├── CompanyForm (Thêm công ty)
 │   ├── CompanySelector (Chọn 2 công ty)
-│   ├── CompanyList (Danh sách)
-│   └── ComparisonTable (Kết quả)
+│   ├── CompanyListAdvanced (Danh sách)
+│   └── ComparisonTable (Kết quả)...
 ├── Tab 2: Biểu Đồ
-│   └── ComparisonChart (Charts)
+│   └── ComparisonChart` (Charts)
 ├── Tab 3: AI Gợi Ý
 │   └── AIRecommendations (Gợi ý)
 ├── Tab 4: Analytics
@@ -656,30 +653,3 @@ DATABASE_URL=postgresql://postgres:postgres123@localhost:5432/excel_app
 
 ---
 
-## 📝 License
-
-MIT License - Bạn có thể sử dụng tự do cho mục đích cá nhân hoặc thương mại
-
----
-
-## 💬 Support
-
-Nếu có vấn đề:
-
-1. Kiểm tra **Troubleshooting** phía trên
-2. Xem các file **FIX_*.md**
-3. Kiểm tra logs: `npm run start:dev`
-4. Verify imports & file paths
-
----
-
-## 🎉 Chúc mừng!
-
-Bạn có một hệ thống đầy đủ để:
-- ✅ So sánh công ty
-- ✅ Nhận gợi ý AI
-- ✅ Phân tích lương
-- ✅ Xem analytics
-- ✅ Hợp tác real-time
-
-**Happy coding! 🚀**
