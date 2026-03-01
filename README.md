@@ -7,8 +7,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
+<div style="border-radius:50%;" >
 <img width="225" height="225" alt="image" src="https://github.com/user-attachments/assets/2d49c0e8-ddae-4f96-9df2-6a3a6a91fc60" />
-
+</div>
 ## 📋 Mục Lục
 
 - [ Tổng Quan](#-tổng-quan)
