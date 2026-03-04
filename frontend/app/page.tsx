@@ -10,6 +10,17 @@ import RealtimeCollaboration from "./component/RealTimeCollaboration";
 import { Company, Comparison } from "./type/company";
 import CompanyListAdvanced from "./component/CompanyListAdvanced";
 import { GetCompany, CompareCompany, AddCompany } from "./lib/api";
+import {
+  BarChart2,
+  Bot,
+  DollarSign,
+  GitCompare,
+  Layers,
+  Loader2,
+  PieChart,
+  Scale,
+  Users,
+} from "lucide-react";
 
 type TabType =
   | "table"
@@ -22,8 +33,12 @@ type TabType =
 export default function Home() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [comparison, setComparison] = useState<Comparison | null>(null);
-  const [selectedCompany1, setSelectedCompany1] = useState<Company | null>(null);
-  const [selectedCompany2, setSelectedCompany2] = useState<Company | null>(null);
+  const [selectedCompany1, setSelectedCompany1] = useState<Company | null>(
+    null,
+  );
+  const [selectedCompany2, setSelectedCompany2] = useState<Company | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("table");
 
@@ -42,16 +57,19 @@ export default function Home() {
     // Không dùng polling interval — fetch lại sau khi add/compare thủ công
   }, [fetchCompanies]);
 
-  const handleAddCompany = useCallback(async (formData: any) => {
-    try {
-      const res = await AddCompany(formData);
-      if (res.ok) {
-        await fetchCompanies();
+  const handleAddCompany = useCallback(
+    async (formData: any) => {
+      try {
+        const res = await AddCompany(formData);
+        if (res.ok) {
+          await fetchCompanies();
+        }
+      } catch (error) {
+        console.error("Error adding company:", error);
       }
-    } catch (error) {
-      console.error("Error adding company:", error);
-    }
-  }, [fetchCompanies]);
+    },
+    [fetchCompanies],
+  );
 
   const handleCompare = useCallback(async () => {
     if (!selectedCompany1 || !selectedCompany2) {
@@ -62,14 +80,22 @@ export default function Home() {
       alert("Vui lòng chọn 2 công ty khác nhau");
       return;
     }
-    if (selectedCompany1.industry.toLocaleUpperCase() !== selectedCompany2.industry.toLocaleUpperCase()) {
-      alert(`Vui lòng chọn 2 công ty cùng ngành để so sánh (${selectedCompany1.industry} vs ${selectedCompany2.industry})`);
+    if (
+      selectedCompany1.industry.toLocaleUpperCase() !==
+      selectedCompany2.industry.toLocaleUpperCase()
+    ) {
+      alert(
+        `Vui lòng chọn 2 công ty cùng ngành để so sánh (${selectedCompany1.industry} vs ${selectedCompany2.industry})`,
+      );
       return;
     }
 
     setLoading(true);
     try {
-      const res = await CompareCompany(selectedCompany1.id, selectedCompany2.id);
+      const res = await CompareCompany(
+        selectedCompany1.id,
+        selectedCompany2.id,
+      );
       if (res.ok) {
         const data = await res.json();
         setComparison(data);
@@ -91,7 +117,7 @@ export default function Home() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            💼 Company Comparison System
+           <div className="flex items-center gap-2"> <Layers /> Company Comparison System</div>
           </h1>
           <p className="text-gray-600">
             So sánh công ty để lựa chọn công việc phù hợp nhất
@@ -102,14 +128,30 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-lg p-2 flex gap-2 mb-8 flex-wrap">
           {(
             [
-              { key: "table",         label: "📋 So Sánh"      },
-              { key: "chart",         label: "📊 Biểu Đồ"      },
-              { key: "ai",            label: "🤖 AI Gợi Ý"     },
-              { key: "analytics",     label: "📊 Analytics"    },
-              { key: "salary",        label: "💰 Salary"        },
-              { key: "collaboration", label: "🔄 Collaboration" },
-            ] as { key: TabType; label: string }[]
-          ).map(({ key, label }) => (
+              {
+                key: "table",
+                label: "So Sánh",
+                icon: <GitCompare size={16} />,
+              },
+              { key: "chart", label: "Biểu Đồ", icon: <BarChart2 size={16} /> },
+              { key: "ai", label: "AI Gợi Ý", icon: <Bot size={16} /> },
+              {
+                key: "analytics",
+                label: "Analytics",
+                icon: <PieChart size={16} />,
+              },
+              {
+                key: "salary",
+                label: "Salary",
+                icon: <DollarSign size={16} />,
+              },
+              {
+                key: "collaboration",
+                label: "Collaboration",
+                icon: <Users size={16} />,
+              },
+            ] as { key: TabType; label: string; icon: React.ReactNode }[]
+          ).map(({ key, label,icon  }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -119,13 +161,19 @@ export default function Home() {
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
+              {" "}
+              <div className="flex items-center gap-1">
+              {icon}
               {label}
+              </div>
             </button>
           ))}
         </div>
 
         {/* Content */}
-        {activeTab === "table" || activeTab === "chart" || activeTab === "ai" ? (
+        {activeTab === "table" ||
+        activeTab === "chart" ||
+        activeTab === "ai" ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Sidebar */}
             <div className="lg:col-span-1">
@@ -140,10 +188,18 @@ export default function Home() {
                         Công ty {n}
                       </label>
                       <select
-                        value={n === "1" ? (selectedCompany1?.id ?? "") : (selectedCompany2?.id ?? "")}
+                        value={
+                          n === "1"
+                            ? (selectedCompany1?.id ?? "")
+                            : (selectedCompany2?.id ?? "")
+                        }
                         onChange={(e) => {
-                          const company = companies.find((c) => c.id === e.target.value) ?? null;
-                          n === "1" ? setSelectedCompany1(company) : setSelectedCompany2(company);
+                          const company =
+                            companies.find((c) => c.id === e.target.value) ??
+                            null;
+                          n === "1"
+                            ? setSelectedCompany1(company)
+                            : setSelectedCompany2(company);
                         }}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
@@ -162,7 +218,11 @@ export default function Home() {
                     disabled={loading || !selectedCompany1 || !selectedCompany2}
                     className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    {loading ? "Đang so sánh..." : "⚖️ So sánh"}
+                   {loading ? (
+                      <><Loader2 size={18} className="animate-spin" /> Đang so sánh...</>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2"><Scale size={18} /> So sánh</div>
+                    )}
                   </button>
                 </div>
               </div>

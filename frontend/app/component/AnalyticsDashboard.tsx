@@ -1,4 +1,5 @@
 'use client';
+import { BriefcaseBusiness, ChartNoAxesCombined, Factory, Rocket } from 'lucide-react';
 import { useAnalytics } from '../hooks/useAnalytics';
 
 export default function AnalyticsDashboard() {
@@ -34,7 +35,7 @@ export default function AnalyticsDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            📊 Analytics Dashboard
+            <div className="flex items-center gap-2"><ChartNoAxesCombined  size={50}/> Analytics Dashboard</div>
           </h1>
           <p className="text-gray-600">
             Real-time insights about companies and comparisons
@@ -76,7 +77,7 @@ export default function AnalyticsDashboard() {
           {/* Top Companies */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              🏆 Top Companies by Views
+              <div className="flex items-center gap-2"><Rocket /> Top Companies by Views</div>
             </h2>
             <div className="space-y-3">
               {data.topCompanies.map((company, idx) => (
@@ -111,7 +112,7 @@ export default function AnalyticsDashboard() {
           {/* Industry Average Scores */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              📈 Industry Average Scores
+              <div className="flex items-center gap-2"><Factory /> Industry Average Scores</div>
             </h2>
             <div className="space-y-3">
               {data.industryAverages.map((industry) => (
@@ -146,7 +147,7 @@ export default function AnalyticsDashboard() {
         {/* Industry Distribution */}
         <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            🏢 Industry Distribution
+           <div className="flex items-center gap-2"><BriefcaseBusiness /> Industry Distribution</div>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(data.industryDistribution).map(

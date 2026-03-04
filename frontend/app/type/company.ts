@@ -3,6 +3,9 @@ export interface Company {
   id: string;
   name: string;
   industry: string;
+  role: string;
+  level: string;
+  position: string;
   salary: number;
   benefits: number;
   growth: number;
@@ -20,11 +23,8 @@ export interface Comparison {
   winner: 'company1' | 'company2' | 'tie';
   recommendation: string;
   industryBenchmark: {
-    industry: string;
-    avgSalary: number;
-    avgBenefits: number;
-    avgGrowth: number;
-    avgWLB: number;
+    company1: { industry: string; avgSalary: number; avgBenefits: number; avgGrowth: number; avgWLB: number,level: string };
+    company2: { industry: string; avgSalary: number; avgBenefits: number; avgGrowth: number; avgWLB: number,level: string };
   };
   createdAt: Date;
 }
@@ -36,5 +36,8 @@ export const INDUSTRIES = [
   'Sales',
   'Marketing',
   'Engineering',
-  'Other'
+  "Manufacturing",
+  "Retail",
+  "Healthcare",
+  "Education",
 ];

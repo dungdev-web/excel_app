@@ -110,7 +110,7 @@ export class AiService {
     const avgBenefits = Math.round(companies.reduce((s, c) => s + c.benefits, 0) / companies.length * 10) / 10;
     const avgGrowth   = Math.round(companies.reduce((s, c) => s + c.growth, 0) / companies.length * 10) / 10;
 
-    let insight = `📊 Phân tích dựa trên ${companies.length} công ty của bạn:\n`;
+    let insight = `Phân tích dựa trên ${companies.length} công ty của bạn:\n`;
     insight += `- Lương trung bình: $${avgSalary}/tháng\n`;
     insight += `- Phúc lợi TB: ${avgBenefits}/10\n`;
     insight += `- Phát triển TB: ${avgGrowth}/10\n`;
