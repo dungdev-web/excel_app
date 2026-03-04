@@ -17,6 +17,7 @@ import {
   RadialLinearScale
 } from "chart.js";
 import { Comparison } from "../type/company";
+import { Dock } from "lucide-react";
 
 // Register ChartJS components
 ChartJS.register(
@@ -234,7 +235,7 @@ export default function ComparisonChart({ comparison }: ComparisonChartProps) {
       {/* Statistics Table */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-lg font-bold text-gray-800 mb-4">
-          📊 Thống Kê Chi Tiết
+          <div className="flex items-center gap-2"><Dock /> Thống Kê Chi Tiết</div>
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

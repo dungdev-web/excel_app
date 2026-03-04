@@ -10,7 +10,11 @@ import {
   Gift,
   Loader,
   Landmark,
+  ChartNoAxesCombined,
+  Scale,
+  ChartColumnDecreasing
 } from "lucide-react";
+import { INDUSTRIES } from "../lib/contants";
 import AutocompleteInputEnhanced from "./AutocompleteInputEnhanced";
 
 interface RecommendationResult {
@@ -24,23 +28,12 @@ interface AIRecommendationsProps {
   onSelectCompany?: (companyId: string) => void;
 }
 
-const DEFAULT_INDUSTRIES = [
-  "IT",
-  "Finance",
-  "HR",
-  "Sales",
-  "Marketing",
-  "Engineering",
-  "Manufacturing",
-  "Retail",
-  "Healthcare",
-  "Education",
-];
+
 
 export default function AIRecommendations({
   onSelectCompany,
 }: AIRecommendationsProps) {
-  const [industries, setIndustries] = useState<string[]>(DEFAULT_INDUSTRIES);
+  const [industries, setIndustries] = useState<string[]>(INDUSTRIES);
   const [preferences, setPreferences] = useState({
     prioritizeSalary: 5,
     prioritizeBenefits: 5,
@@ -183,7 +176,7 @@ export default function AIRecommendations({
             {/* Benefits Priority */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                🎁 Ưu tiên Phúc lợi: {preferences.prioritizeBenefits}/10
+                <div className="flex items-center gap-2"><Gift size={15} /> Ưu tiên Phúc lợi: {preferences.prioritizeBenefits}/10</div>
               </label>
               <input
                 type="range"
@@ -203,7 +196,7 @@ export default function AIRecommendations({
             {/* Growth Priority */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                📈 Ưu tiên Phát triển: {preferences.prioritizeGrowth}/10
+                <div className="flex items-center gap-2"><ChartNoAxesCombined size={15} /> Ưu tiên Phát triển: {preferences.prioritizeGrowth}/10</div>
               </label>
               <input
                 type="range"
@@ -223,7 +216,7 @@ export default function AIRecommendations({
             {/* Work-Life Balance Priority */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ⚖️ Ưu tiên Cân bằng: {preferences.prioritizeWorkLifeBalance}/10
+                <div className="flex items-center gap-2"><Scale size={15}/> Ưu tiên Cân bằng: {preferences.prioritizeWorkLifeBalance}/10</div>
               </label>
               <input
                 type="range"
@@ -440,7 +433,7 @@ export default function AIRecommendations({
             <div className="space-y-4">
               <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  📊 Phân Tích AI
+                 <div className="flex items-center gap-2"> <ChartColumnDecreasing /> Phân Tích AI</div>
                 </h2>
                 <p className="text-gray-800 whitespace-pre-line">{insight}</p>
               </div>

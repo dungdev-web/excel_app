@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useSalaryBenchmark } from '../hooks/useSalaryBenchmark';
+import { ChartPie, CircleChevronDown, HandCoins, Search } from 'lucide-react';
 
 export default function SalaryComparison() {
   const [role, setRole] = useState('Software Developer');
@@ -25,7 +26,7 @@ export default function SalaryComparison() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            💰 Salary Benchmarking
+            <div className="flex items-center gap-2"><HandCoins size={35} /> Salary Benchmarking</div>
           </h1>
           <p className="text-gray-600">
             Compare your salary with market data
@@ -35,7 +36,7 @@ export default function SalaryComparison() {
         {/* Input Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            📊 Your Information
+           <div className="flex items-center gap-2"> <ChartPie /> Your Information</div>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -97,7 +98,9 @@ export default function SalaryComparison() {
             disabled={loading}
             className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-semibold"
           >
-            {loading ? '⏳ Comparing...' : '🔍 Compare Salary'}
+            {loading ? 
+              <><div>Comparing...</div></>:
+              <><div className="flex items-center gap-2 justify-center"><Search />Compare Salary</div></>}
           </button>
         </div>
 
@@ -107,7 +110,7 @@ export default function SalaryComparison() {
             {/* Salary Comparison */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-6">
-                📈 Comparison Result
+                <div className="flex items-center gap-2"><CircleChevronDown /> Comparison Result</div>
               </h2>
 
               <div className="grid grid-cols-3 gap-4 mb-8">

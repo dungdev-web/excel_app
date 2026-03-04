@@ -1,4 +1,5 @@
 'use client';
+import { Plus } from 'lucide-react';
 import { useAutocomplete } from '../hooks/useAutocomplete';
 import { useRef, useEffect } from 'react';
 import { ReactNode } from 'react';
@@ -151,7 +152,7 @@ export default function AutocompleteInputEnhanced({
                   }}
                   className="w-full text-left px-4 py-2 hover:bg-green-50 text-green-700 font-medium flex items-center gap-2"
                 >
-                  <span>➕</span>
+                  <span><Plus/></span>
                   Thêm "{value}" mới
                 </button>
               </>

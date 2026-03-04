@@ -1,6 +1,7 @@
 // components/ComparisonTable.tsx
-'use client';
-import { Comparison } from '../type/company';
+"use client";
+import { BookmarkCheck, BookText, CalendarArrowDown } from "lucide-react";
+import { Comparison } from "../type/company";
 
 interface ComparisonTableProps {
   comparison: Comparison;
@@ -9,60 +10,92 @@ interface ComparisonTableProps {
 export default function ComparisonTable({ comparison }: ComparisonTableProps) {
   const { company1, company2, score1, score2, winner, recommendation, industryBenchmark } = comparison;
 
+  // Support cả shape cũ (flat) và mới (company1/company2)
+  const bm1 = (industryBenchmark as any).company1 ?? industryBenchmark;
+  const bm2 = (industryBenchmark as any).company2 ?? industryBenchmark;
+
   const criteria = [
-    { label: 'Lương (USD)', key: 'salary', unit: '$' },
-    { label: 'Phúc lợi', key: 'benefits', unit: '/10' },
-    { label: 'Phát triển', key: 'growth', unit: '/10' },
-    { label: 'Cân bằng công việc', key: 'workLifeBalance', unit: '/10' }
+    { label: "Vị trí",              key: "role",            unit: ""    },
+    { label: "Cấp bậc",             key: "level",           unit: ""    },
+    { label: "Hình thức",           key: "position",        unit: ""    },
+    { label: "Lương (USD)",         key: "salary",          unit: "$"   },
+    { label: "Phúc lợi",            key: "benefits",        unit: "/10" },
+    { label: "Phát triển",          key: "growth",          unit: "/10" },
+    { label: "Cân bằng công việc",  key: "workLifeBalance", unit: "/10" },
   ];
 
+  // Các tiêu chí so sánh số (highlight xanh/đỏ)
+  const numericKeys = new Set(["salary", "benefits", "growth", "workLifeBalance"]);
+
   const getWinnerClass = (value1: number, value2: number, isCompany1: boolean) => {
-    if (value1 === value2) return '';
-    if ((value1 > value2 && isCompany1) || (value1 < value2 && !isCompany1)) {
-      return 'bg-green-100 font-bold text-green-800';
-    }
-    return 'bg-red-100 text-red-800';
+    if (value1 === value2) return "";
+    if ((value1 > value2 && isCompany1) || (value1 < value2 && !isCompany1))
+      return "bg-green-100 font-bold text-green-800";
+    return "bg-red-100 text-red-800";
   };
+
+  const formatValue = (val: any): string => {
+    if (val instanceof Date) return val.toLocaleDateString("vi-VN");
+    return String(val ?? "—");
+  };
+
+  const BenchmarkRow = ({
+    label, c1val, c2val, bm1val, bm2val, unit,
+  }: {
+    label: string; c1val: number; c2val: number; bm1val: number; bm2val: number; unit: string;
+  }) => (
+    <div className="grid grid-cols-3 gap-2 py-2 border-b border-gray-100 text-sm">
+      <span className="text-gray-600 font-medium">{label}</span>
+      <span className={c1val > bm1val ? "text-green-600 font-semibold" : "text-red-500"}>
+        {c1val}{unit} {c1val > bm1val ? "✅" : "❌"} (BM: {bm1val}{unit})
+      </span>
+      <span className={c2val > bm2val ? "text-green-600 font-semibold" : "text-red-500"}>
+        {c2val}{unit} {c2val > bm2val ? "✅" : "❌"} (BM: {bm2val}{unit})
+      </span>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
       {/* Overall Score */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Kết Quả So Sánh</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="flex items-center gap-2">
+            <CalendarArrowDown /> Kết Quả So Sánh
+          </div>
+        </h2>
 
         <div className="grid grid-cols-2 gap-6 mb-6">
-          {/* Company 1 Score */}
-          <div className={`text-center p-6 rounded-lg ${winner === 'company1' ? 'bg-green-100 border-2 border-green-500' : 'bg-gray-50'}`}>
-            <p className="text-lg font-semibold text-gray-700 mb-2">{company1.name}</p>
-            <p className="text-5xl font-bold text-blue-600 mb-2">{score1}</p>
-            <p className="text-sm text-gray-600">Điểm tổng thể / 100</p>
-            {winner === 'company1' && (
-              <p className="mt-2 text-green-700 font-bold">🏆 Công ty tốt hơn!</p>
-            )}
-          </div>
-
-          {/* Company 2 Score */}
-          <div className={`text-center p-6 rounded-lg ${winner === 'company2' ? 'bg-green-100 border-2 border-green-500' : 'bg-gray-50'}`}>
-            <p className="text-lg font-semibold text-gray-700 mb-2">{company2.name}</p>
-            <p className="text-5xl font-bold text-indigo-600 mb-2">{score2}</p>
-            <p className="text-sm text-gray-600">Điểm tổng thể / 100</p>
-            {winner === 'company2' && (
-              <p className="mt-2 text-green-700 font-bold">🏆 Công ty tốt hơn!</p>
-            )}
-          </div>
+          {[
+            { company: company1, score: score1, color: "text-blue-600",   isWinner: winner === "company1" },
+            { company: company2, score: score2, color: "text-indigo-600", isWinner: winner === "company2" },
+          ].map(({ company, score, color, isWinner }) => (
+            <div
+              key={company.id}
+              className={`text-center p-6 rounded-lg ${isWinner ? "bg-green-100 border-2 border-green-500" : "bg-gray-50"}`}
+            >
+              <p className="text-lg font-semibold text-gray-700 mb-1">{company.name}</p>
+              <p className="text-xs text-gray-500 mb-2">{company.role} · {company.level}</p>
+              <p className={`text-5xl font-bold mb-2 ${color}`}>{score}</p>
+              <p className="text-sm text-gray-600">Điểm tổng thể / 100</p>
+              {isWinner && <p className="mt-2 text-green-700 font-bold">🏆 Công ty tốt hơn!</p>}
+            </div>
+          ))}
         </div>
 
-        {/* Score Difference */}
         <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
           <p className="text-sm text-gray-600">
-            Chênh lệch điểm: <span className="font-bold text-lg">{Math.abs(score1 - score2).toFixed(1)} điểm</span>
+            Chênh lệch điểm:{" "}
+            <span className="font-bold text-lg">{Math.abs(score1 - score2).toFixed(1)} điểm</span>
           </p>
         </div>
       </div>
 
       {/* Detailed Comparison */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Chi tiết so sánh</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="flex items-center gap-2"><BookText /> Chi tiết so sánh</div>
+        </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -77,17 +110,18 @@ export default function ComparisonTable({ comparison }: ComparisonTableProps) {
               {criteria.map((criterion, idx) => {
                 const value1 = company1[criterion.key as keyof typeof company1];
                 const value2 = company2[criterion.key as keyof typeof company2];
+                const isNumeric = numericKeys.has(criterion.key);
 
                 return (
                   <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="p-3 font-medium text-gray-800">{criterion.label}</td>
-                    <td className={`text-center p-3 rounded ${getWinnerClass(Number(value1), Number(value2), true)}`}>
-                      {value1}
-                      <span className="text-xs text-gray-600">{criterion.unit}</span>
+                    <td className={`text-center p-3 rounded ${isNumeric ? getWinnerClass(Number(value1), Number(value2), true) : ""}`}>
+                      {formatValue(value1)}
+                      {criterion.unit && <span className="text-xs text-gray-500 ml-0.5">{criterion.unit}</span>}
                     </td>
-                    <td className={`text-center p-3 rounded ${getWinnerClass(Number(value1), Number(value2), false)}`}>
-                      {value2}
-                      <span className="text-xs text-gray-600">{criterion.unit}</span>
+                    <td className={`text-center p-3 rounded ${isNumeric ? getWinnerClass(Number(value1), Number(value2), false) : ""}`}>
+                      {formatValue(value2)}
+                      {criterion.unit && <span className="text-xs text-gray-500 ml-0.5">{criterion.unit}</span>}
                     </td>
                   </tr>
                 );
@@ -96,12 +130,8 @@ export default function ComparisonTable({ comparison }: ComparisonTableProps) {
               {/* Overall Score Row */}
               <tr className="bg-blue-50 border-t-2 border-blue-300">
                 <td className="p-3 font-bold text-gray-800">Điểm Tổng Hợp</td>
-                <td className={`text-center p-3 font-bold text-lg rounded ${winner === 'company1' ? 'bg-green-200' : ''}`}>
-                  {score1}
-                </td>
-                <td className={`text-center p-3 font-bold text-lg rounded ${winner === 'company2' ? 'bg-green-200' : ''}`}>
-                  {score2}
-                </td>
+                <td className={`text-center p-3 font-bold text-lg rounded ${winner === "company1" ? "bg-green-200" : ""}`}>{score1}</td>
+                <td className={`text-center p-3 font-bold text-lg rounded ${winner === "company2" ? "bg-green-200" : ""}`}>{score2}</td>
               </tr>
             </tbody>
           </table>
@@ -110,55 +140,21 @@ export default function ComparisonTable({ comparison }: ComparisonTableProps) {
 
       {/* Industry Benchmark */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">📈 So sánh với Benchmark Ngành</h3>
-        <p className="text-gray-600 mb-4">
-          Ngành: <span className="font-bold">{industryBenchmark.industry}</span>
-        </p>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="flex items-center gap-2"><BookmarkCheck /> So sánh với Benchmark Ngành</div>
+        </h3>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Trung bình lương ngành</p>
-            <p className="text-2xl font-bold text-green-600">${industryBenchmark.avgSalary}</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Trung bình phúc lợi</p>
-            <p className="text-2xl font-bold text-yellow-600">{industryBenchmark.avgBenefits}/10</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Trung bình phát triển</p>
-            <p className="text-2xl font-bold text-blue-600">{industryBenchmark.avgGrowth}/10</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Trung bình cân bằng</p>
-            <p className="text-2xl font-bold text-purple-600">{industryBenchmark.avgWLB}/10</p>
-          </div>
+        {/* Header */}
+        <div className="grid grid-cols-3 gap-2 pb-2 border-b-2 border-gray-200 text-sm font-semibold">
+          <span className="text-gray-500">Tiêu chí</span>
+          <span className="text-blue-600">{company1.name}</span>
+          <span className="text-indigo-600">{company2.name}</span>
         </div>
 
-        {/* Comparison with Benchmark */}
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div>
-            <p className="font-semibold text-gray-800 mb-2">{company1.name}</p>
-            <ul className="space-y-2 text-sm">
-              <li className={company1.salary > industryBenchmark.avgSalary ? 'text-green-600' : 'text-red-600'}>
-                Lương: {company1.salary > industryBenchmark.avgSalary ? '✅ Cao hơn' : '❌ Thấp hơn'} benchmark
-              </li>
-              <li className={company1.benefits > industryBenchmark.avgBenefits ? 'text-green-600' : 'text-red-600'}>
-                Phúc lợi: {company1.benefits > industryBenchmark.avgBenefits ? '✅ Tốt hơn' : '❌ Kém hơn'} benchmark
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p className="font-semibold text-gray-800 mb-2">{company2.name}</p>
-            <ul className="space-y-2 text-sm">
-              <li className={company2.salary > industryBenchmark.avgSalary ? 'text-green-600' : 'text-red-600'}>
-                Lương: {company2.salary > industryBenchmark.avgSalary ? '✅ Cao hơn' : '❌ Thấp hơn'} benchmark
-              </li>
-              <li className={company2.benefits > industryBenchmark.avgBenefits ? 'text-green-600' : 'text-red-600'}>
-                Phúc lợi: {company2.benefits > industryBenchmark.avgBenefits ? '✅ Tốt hơn' : '❌ Kém hơn'} benchmark
-              </li>
-            </ul>
-          </div>
-        </div>
+        <BenchmarkRow label="Lương ($)"    c1val={company1.salary}          c2val={company2.salary}          bm1val={bm1.avgSalary}   bm2val={bm2.avgSalary}   unit="$"   />
+        <BenchmarkRow label="Phúc lợi"    c1val={company1.benefits}        c2val={company2.benefits}        bm1val={bm1.avgBenefits} bm2val={bm2.avgBenefits} unit="/10" />
+        <BenchmarkRow label="Phát triển"  c1val={company1.growth}          c2val={company2.growth}          bm1val={bm1.avgGrowth}   bm2val={bm2.avgGrowth}   unit="/10" />
+        <BenchmarkRow label="Cân bằng"    c1val={company1.workLifeBalance} c2val={company2.workLifeBalance} bm1val={bm1.avgWLB}      bm2val={bm2.avgWLB}      unit="/10" />
       </div>
 
       {/* Recommendation */}
