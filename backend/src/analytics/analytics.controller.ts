@@ -6,8 +6,8 @@ import { AnalyticsService } from './analytics.service';
 @Controller('api/analytics')
 export class AnalyticsController {
   constructor(
-    private analyticsService: AnalyticsService,
-    private jwtService: JwtService,
+    private readonly analyticsService: AnalyticsService,
+    private readonly jwtService: JwtService,
   ) {}
 
   private getUserId(authHeader: string): string {
@@ -21,19 +21,19 @@ export class AnalyticsController {
     }
   }
 
-  @Get('/dashboard')
+  @Get('dashboard')
   async getDashboard(@Headers('authorization') auth: string) {
     const userId = this.getUserId(auth);
     return this.analyticsService.getDashboardMetrics(userId);
   }
 
-  @Get('/salary-stats')
+  @Get('salary-stats')
   async getSalaryStats(@Headers('authorization') auth: string) {
     const userId = this.getUserId(auth);
     return this.analyticsService.getSalaryStats(userId);
   }
 
-  @Get('/company-health/:companyId')
+  @Get('company-health/:companyId')
   async getCompanyHealth(
     @Param('companyId') companyId: string,
     @Headers('authorization') auth: string,
@@ -42,9 +42,14 @@ export class AnalyticsController {
     return this.analyticsService.getCompanyHealthScore(companyId, userId);
   }
 
-  @Post('/track-view/:companyId')
-  async trackView(@Param('companyId') companyId: string) {
-    this.analyticsService.trackCompanyView(companyId);
+  // ← Endpoint mới: track view khi user xem công ty
+  @Post('track-view/:companyId')
+  async trackView(
+    @Param('companyId') companyId: string,
+    @Headers('authorization') auth: string,
+  ) {
+    this.getUserId(auth); // verify token
+    await this.analyticsService.trackCompanyView(companyId);
     return { success: true };
   }
 }

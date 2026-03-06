@@ -103,7 +103,10 @@ export class AiService {
         body:    JSON.stringify({
           preference,
           companies: mlCompanies,
-          history:   this.interactionHistory,
+          history:   this.mergeHistory(
+            await this.buildHistoryFromData(),
+            this.interactionHistory,
+          ),
         }),
         signal: AbortSignal.timeout(3000), // timeout 3s, tự fallback
       });
@@ -271,5 +274,31 @@ export class AiService {
     }
 
     return reasons.join(' • ');
+  }
+
+  // Chuyển overallScore từ Excel thành rating 1–5 cho Collaborative Filtering
+  private async buildHistoryFromData(): Promise<UserHistory[]> {
+    const allCompanies = await this.companiesService.findAll(); // không truyền userId → lấy tất cả
+    return allCompanies
+      .filter((c: any) => c.userId && c.id && c.overallScore != null)
+      .map((c: any) => ({
+        userId:    c.userId,
+        companyId: c.id,
+        // overallScore 0–100 → rating 1–5
+        rating: Math.max(1, Math.min(5, Math.round((c.overallScore / 100) * 5))),
+      }));
+  }
+
+  // Merge history từ Excel + in-memory, giữ rating cao nhất nếu trùng
+  private mergeHistory(base: UserHistory[], extra: UserHistory[]): UserHistory[] {
+    const map = new Map<string, UserHistory>();
+    for (const h of [...base, ...extra]) {
+      const key = `${h.userId}__${h.companyId}`;
+      const existing = map.get(key);
+      if (!existing || h.rating > existing.rating) {
+        map.set(key, h);
+      }
+    }
+    return Array.from(map.values());
   }
 }

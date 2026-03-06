@@ -3,24 +3,27 @@ import { useState, useMemo } from 'react';
 import { usePagination } from '../hooks/usePagination';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { Company } from '../type/company';
+import { TrackView } from '../lib/api';
 
-type SortBy = 'name' | 'salary' | 'overallScore';  // ✅ Fix here
+type SortBy = 'name' | 'salary' | 'overallScore';
 type SortOrder = 'asc' | 'desc';
 
 interface CompanyListAdvancedProps {
   companies: Company[];
   itemsPerPage?: number;
+  onSelectCompany?: (company: Company) => void; // ← optional callback
 }
 
 export default function CompanyListAdvanced({
   companies,
-  itemsPerPage = 5
+  itemsPerPage = 5,
+  onSelectCompany,
 }: CompanyListAdvancedProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Filter companies
   const filteredCompanies = useMemo(() => {
     return companies.filter(
       (company) =>
@@ -29,42 +32,28 @@ export default function CompanyListAdvanced({
     );
   }, [companies, searchTerm]);
 
-  // Sort companies
   const sortedCompanies = useMemo(() => {
     const sorted = [...filteredCompanies];
-
     sorted.sort((a, b) => {
       if (sortBy === 'name') {
-        const aVal = a.name.toLowerCase();
-        const bVal = b.name.toLowerCase();
-        return sortOrder === 'asc' 
-          ? aVal.localeCompare(bVal) 
-          : bVal.localeCompare(aVal);
+        return sortOrder === 'asc'
+          ? a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+          : b.name.toLowerCase().localeCompare(a.name.toLowerCase());
       } else if (sortBy === 'salary') {
-        const aVal = a.salary;
-        const bVal = b.salary;
-        return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
-      } else if (sortBy === 'overallScore') {  // ✅ Use overallScore
-        const aVal = a.overallScore;
-        const bVal = b.overallScore;
-        return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+        return sortOrder === 'asc' ? a.salary - b.salary : b.salary - a.salary;
+      } else if (sortBy === 'overallScore') {
+        return sortOrder === 'asc'
+          ? a.overallScore - b.overallScore
+          : b.overallScore - a.overallScore;
       }
       return 0;
     });
-
     return sorted;
   }, [filteredCompanies, sortBy, sortOrder]);
 
-  // Pagination
   const {
-    currentPage,
-    totalPages,
-    currentItems,
-    goToPage,
-    nextPage,
-    prevPage,
-    canGoPrev,
-    canGoNext
+    currentPage, totalPages, currentItems,
+    goToPage, nextPage, prevPage, canGoPrev, canGoNext,
   } = usePagination({ items: sortedCompanies, itemsPerPage });
 
   const handleSort = (field: SortBy) => {
@@ -74,6 +63,13 @@ export default function CompanyListAdvanced({
       setSortBy(field);
       setSortOrder('asc');
     }
+  };
+
+  // Track view + highlight khi click
+  const handleCompanyClick = (company: Company) => {
+    setSelectedId(company.id);
+    TrackView(company.id); // fire-and-forget, không cần await
+    onSelectCompany?.(company);
   };
 
   return (
@@ -95,63 +91,28 @@ export default function CompanyListAdvanced({
           type="text"
           placeholder="Tìm kiếm công ty hoặc ngành..."
           value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            goToPage(1);
-          }}
+          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
         />
       </div>
 
       {/* Sort Controls */}
       <div className="mb-4 flex gap-2 flex-wrap">
-        <button
-          onClick={() => handleSort('name')}
-          className={`
-            flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition
-            ${
-              sortBy === 'name'
+        {(['name', 'salary', 'overallScore'] as SortBy[]).map((field) => (
+          <button
+            key={field}
+            onClick={() => handleSort(field)}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
+              sortBy === field
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }
-          `}
-        >
-          <ArrowUpDown size={14} />
-          Tên
-          {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-        </button>
-
-        <button
-          onClick={() => handleSort('salary')}
-          className={`
-            flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition
-            ${
-              sortBy === 'salary'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }
-          `}
-        >
-          <ArrowUpDown size={14} />
-          Lương
-          {sortBy === 'salary' && (sortOrder === 'asc' ? '↑' : '↓')}
-        </button>
-
-        <button
-          onClick={() => handleSort('overallScore')} 
-          className={`
-            flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition
-            ${
-              sortBy === 'overallScore'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }
-          `}
-        >
-          <ArrowUpDown size={14} />
-          Điểm
-          {sortBy === 'overallScore' && (sortOrder === 'asc' ? '↑' : '↓')}
-        </button>
+            }`}
+          >
+            <ArrowUpDown size={14} />
+            {field === 'name' ? 'Tên' : field === 'salary' ? 'Lương' : 'Điểm'}
+            {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+          </button>
+        ))}
       </div>
 
       {/* Company List */}
@@ -160,7 +121,12 @@ export default function CompanyListAdvanced({
           currentItems.map((company) => (
             <div
               key={company.id}
-              className="p-3 bg-linear-to-r from-blue-50 to-transparent rounded-lg border-l-4 border-blue-500 hover:shadow-md transition"
+              onClick={() => handleCompanyClick(company)}
+              className={`p-3 rounded-lg border-l-4 hover:shadow-md transition cursor-pointer ${
+                selectedId === company.id
+                  ? 'border-blue-600 bg-blue-50 shadow-md'
+                  : 'border-blue-500 bg-gradient-to-r from-blue-50 to-transparent'
+              }`}
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
@@ -181,31 +147,25 @@ export default function CompanyListAdvanced({
         )}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-4 flex items-center justify-between gap-4">
           <button
-            onClick={prevPage}
-            disabled={!canGoPrev}
+            onClick={prevPage} disabled={!canGoPrev}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition text-sm font-medium"
           >
-            <ChevronLeft size={16} />
-            Trước
+            <ChevronLeft size={16} /> Trước
           </button>
 
           <div className="flex items-center gap-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`
-                  w-8 h-8 rounded-lg font-semibold transition text-sm
-                  ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }
-                `}
+                key={page} onClick={() => goToPage(page)}
+                className={`w-8 h-8 rounded-lg font-semibold transition text-sm ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
                 {page}
               </button>
@@ -213,17 +173,14 @@ export default function CompanyListAdvanced({
           </div>
 
           <button
-            onClick={nextPage}
-            disabled={!canGoNext}
+            onClick={nextPage} disabled={!canGoNext}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition text-sm font-medium"
           >
-            Sau
-            <ChevronRight size={16} />
+            Sau <ChevronRight size={16} />
           </button>
         </div>
       )}
 
-      {/* Info */}
       {totalPages > 1 && (
         <div className="mt-4 text-xs text-gray-500 text-center">
           Hiển thị {currentItems.length} trên {sortedCompanies.length} công ty

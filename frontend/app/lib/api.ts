@@ -79,7 +79,19 @@ export async function SalaryStats() {
   if (!res.ok) throw new Error(`Failed to fetch salary stats: ${res.statusText}`);
   return res.json();
 }
-
+export async function TrackAI(companyId: string, action: string) {
+  return fetch(`${API_URL}/api/ai/track`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ companyId, action }),
+  });
+}
+export async function TrackView(companyId: string) {
+  return fetch(`${API_URL}/api/analytics/track-view/${companyId}`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+}
 // ── Salary Benchmark (public, không cần auth) ──────────────
 export async function SalaryBenchmark(salary: number, industry: string, role: string) {
   const res = await fetch(`${API_URL}/api/benchmark/compare`, {
