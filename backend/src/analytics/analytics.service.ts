@@ -5,26 +5,81 @@ import { ComparisonsService } from '../comparisons/comparisons.service';
 
 @Injectable()
 export class AnalyticsService {
-  private viewCounts = new Map<string, number>();
+  // In-memory cache để tránh đọc/ghi Excel liên tục
+  // Sync với Excel mỗi FLUSH_INTERVAL ms
+  private viewCache = new Map<string, number>();
+  private dirtyKeys = new Set<string>(); // keys cần flush
+  private readonly FLUSH_INTERVAL = 10_000; // 10 giây
 
   constructor(
     private companiesService: CompaniesService,
     private comparisonsService: ComparisonsService,
-  ) {}
-
-  trackCompanyView(companyId: string) {
-    this.viewCounts.set(companyId, (this.viewCounts.get(companyId) || 0) + 1);
+  ) {
+    this.loadViewsFromExcel();
+    // Auto flush cache → Excel mỗi 10s
+    setInterval(() => this.flushViews(), this.FLUSH_INTERVAL);
   }
+
+  // ─────────────────────────────────────────
+  // VIEW TRACKING
+  // ─────────────────────────────────────────
+
+  async trackCompanyView(companyId: string) {
+    const current = this.viewCache.get(companyId) || 0;
+    this.viewCache.set(companyId, current + 1);
+    this.dirtyKeys.add(companyId); // đánh dấu cần flush
+  }
+
+  // Load views từ Excel khi khởi động
+  private async loadViewsFromExcel() {
+    try {
+      const all = await this.companiesService.findAll();
+      for (const c of all as any[]) {
+        if (c.id && c.viewCount != null) {
+          this.viewCache.set(c.id, c.viewCount);
+        }
+      }
+    } catch {
+      // File chưa có viewCount column → bỏ qua, bắt đầu từ 0
+    }
+  }
+
+  // Flush dirty cache → Excel
+  private async flushViews() {
+    if (this.dirtyKeys.size === 0) return;
+    const keys = Array.from(this.dirtyKeys);
+    this.dirtyKeys.clear();
+
+    for (const id of keys) {
+      const count = this.viewCache.get(id) || 0;
+      try {
+        await this.companiesService.updateViewCount(id, count);
+      } catch {
+        // Company đã bị xóa → bỏ qua
+        this.viewCache.delete(id);
+      }
+    }
+  }
+
+  // Force flush ngay (dùng khi cần)
+  async forceFlush() {
+    this.dirtyKeys = new Set(this.viewCache.keys());
+    await this.flushViews();
+  }
+
+  // ─────────────────────────────────────────
+  // DASHBOARD
+  // ─────────────────────────────────────────
 
   async getDashboardMetrics(userId: string) {
     const companies   = await this.companiesService.findAll(userId);
-    const comparisons = await this.comparisonsService.findAll(userId); // ← filter by user
+    const comparisons = await this.comparisonsService.findAll(userId);
 
     if (companies.length === 0) {
       return {
         totalCompanies: 0, totalComparisons: comparisons.length,
-        avgSalary: 0, topCompanies: [], industryDistribution: {}, industryAverages: [],
-        timestamp: new Date(),
+        avgSalary: 0, topCompanies: [], industryDistribution: {},
+        industryAverages: [], timestamp: new Date(),
       };
     }
 
@@ -33,8 +88,13 @@ export class AnalyticsService {
     );
 
     const topCompanies = companies
-      .map((c) => ({ id: c.id, name: c.name, views: this.viewCounts.get(c.id) || 0, score: c.overallScore }))
-      .sort((a, b) => b.views - a.views)
+      .map((c) => ({
+        id:    c.id,
+        name:  c.name,
+        views: this.viewCache.get(c.id) || 0,
+        score: c.overallScore,
+      }))
+      .sort((a, b) => b.views - a.views || b.score - a.score) // tie-break bằng score
       .slice(0, 5);
 
     const industryCount = companies.reduce((acc, c) => {
@@ -56,19 +116,18 @@ export class AnalyticsService {
     }));
 
     return {
-      totalCompanies: companies.length,
-      totalComparisons: comparisons.length,
+      totalCompanies:      companies.length,
+      totalComparisons:    comparisons.length,
       avgSalary,
       topCompanies,
       industryDistribution: industryCount,
       industryAverages,
-      timestamp: new Date(),
+      timestamp:           new Date(),
     };
   }
 
   async getSalaryStats(userId: string) {
-    const companies = await this.companiesService.findAll(userId); // ← filter by user
-
+    const companies = await this.companiesService.findAll(userId);
     if (companies.length === 0) {
       return { average: 0, median: 0, min: 0, max: 0, distribution: {} };
     }
@@ -89,15 +148,15 @@ export class AnalyticsService {
   }
 
   async getCompanyHealthScore(companyId: string, userId: string) {
-    const company = await this.companiesService.findById(companyId, userId); // ← check ownership
+    const company = await this.companiesService.findById(companyId, userId);
     if (!company) return null;
 
     const factors = {
-      salary:         (company.salary / 10000) * 20,
-      benefits:       company.benefits * 10,
-      growth:         company.growth * 10,
-      workLifeBalance:company.workLifeBalance * 10,
-      overall:        (company.overallScore / 100) * 40,
+      salary:          (company.salary / 10000) * 20,
+      benefits:        company.benefits * 10,
+      growth:          company.growth * 10,
+      workLifeBalance: company.workLifeBalance * 10,
+      overall:         (company.overallScore / 100) * 40,
     };
 
     return {

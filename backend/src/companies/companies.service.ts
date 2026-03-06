@@ -10,6 +10,7 @@ interface Company extends CreateCompanyDto {
   id: string;
   userId: string;
   overallScore: number;
+  viewCount: number;   // ← thêm field mới
   createdAt: Date;
 }
 
@@ -25,6 +26,7 @@ const COLUMNS = [
   { header: 'Growth (1-10)',            key: 'growth',          width: 15 },
   { header: 'Work-Life Balance (1-10)', key: 'workLifeBalance', width: 20 },
   { header: 'Overall Score',            key: 'overallScore',    width: 15 },
+  { header: 'View Count',               key: 'viewCount',       width: 12 }, // ← thêm column
   { header: 'Created At',               key: 'createdAt',       width: 20 },
   { header: 'User ID',                  key: 'userId',          width: 38 },
 ];
@@ -43,9 +45,9 @@ export class CompaniesService {
     const normalizedSalary = Math.min((salary / 10000) * 10, 10);
     const score =
       normalizedSalary * 0.3 +
-      benefits * 0.2 +
-      growth * 0.2 +
-      workLifeBalance * 0.2;
+      benefits         * 0.2 +
+      growth           * 0.2 +
+      workLifeBalance  * 0.2;
     return Math.round(score * 100) / 10;
   }
 
@@ -63,6 +65,9 @@ export class CompaniesService {
     this.companies = [];
     worksheet.eachRow((row: any, rowNumber: number) => {
       if (rowNumber > 1) {
+        // Detect xem file cũ (13 col) hay mới (14 col) để đọc đúng vị trí
+        const hasViewCount = worksheet.columnCount >= 14;
+
         const company: Company = {
           id:              row.getCell(1).value,
           name:            row.getCell(2).value,
@@ -75,8 +80,9 @@ export class CompaniesService {
           growth:          row.getCell(9).value,
           workLifeBalance: row.getCell(10).value,
           overallScore:    row.getCell(11).value,
-          createdAt:       row.getCell(12).value,
-          userId:          row.getCell(13).value ?? '',
+          viewCount:       hasViewCount ? (row.getCell(12).value || 0) : 0,
+          createdAt:       hasViewCount ? row.getCell(13).value : row.getCell(12).value,
+          userId:          hasViewCount ? row.getCell(14).value ?? '' : row.getCell(13).value ?? '',
         };
         if (company.id) this.companies.push(company);
       }
@@ -100,10 +106,11 @@ export class CompaniesService {
   async create(createCompanyDto: CreateCompanyDto, userId: string): Promise<CompanyResponseDto> {
     const newCompany: Company = {
       ...createCompanyDto,
-      id: uuidv4(),
+      id:           uuidv4(),
       userId,
       overallScore: this.calculateScore(createCompanyDto),
-      createdAt: new Date(),
+      viewCount:    0,  // ← bắt đầu từ 0
+      createdAt:    new Date(),
     };
     this.companies.push(newCompany);
     await this.saveToExcel();
@@ -119,6 +126,14 @@ export class CompaniesService {
     return company;
   }
 
+  // ← Method mới: chỉ update viewCount, không reload toàn bộ
+  async updateViewCount(id: string, viewCount: number): Promise<void> {
+    const company = this.companies.find((c) => c.id === id);
+    if (!company) return;
+    company.viewCount = viewCount;
+    await this.saveToExcel();
+  }
+
   async delete(id: string, userId: string): Promise<{ success: boolean }> {
     const index = this.companies.findIndex((c) => c.id === id && c.userId === userId);
     if (index === -1) throw new Error('Company not found or access denied');
@@ -128,13 +143,13 @@ export class CompaniesService {
   }
 
   private async saveToExcel() {
-    const workbook = new ExcelJS.Workbook();
+    const workbook  = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Companies');
     worksheet.columns = COLUMNS;
 
     const headerRow = worksheet.getRow(1);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+    headerRow.font      = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
     headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
 
     this.companies.forEach((company) => {
@@ -145,6 +160,12 @@ export class CompaniesService {
           type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' },
         };
       }
+      // Highlight viewCount cao
+      if (company.viewCount >= 5) {
+        row.getCell('viewCount').fill = {
+          type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' },
+        };
+      }
     });
 
     worksheet.views = [{ state: 'frozen', ySplit: 1 }];
@@ -152,7 +173,7 @@ export class CompaniesService {
   }
 
   private async createNewFile() {
-    const workbook = new ExcelJS.Workbook();
+    const workbook  = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Companies');
     worksheet.columns = COLUMNS;
 
